@@ -19,8 +19,8 @@ export async function convertPdfController(c: Context) {
     // Read file into memory
     const buffer = await file.arrayBuffer();
 
-    // Convert PDF to HTML in memory
-    const htmlContent = await convertPdfToHtmlInMemory(buffer);
+    // Convert PDF to HTML in memory with filename
+    const htmlContent = await convertPdfToHtmlInMemory(buffer, file.name);
 
     // Generate filename for download
     const originalName = file.name.replace(/\.pdf$/i, "");
@@ -72,8 +72,11 @@ export async function convertPdfWithOptionsController(c: Context) {
     // Read file into memory
     const buffer = await file.arrayBuffer();
 
-    // Convert PDF to HTML with options in memory
-    const htmlContent = await convertPdfToHtmlWithOptionsInMemory(buffer, options);
+    // Convert PDF to HTML with options in memory, include filename
+    const htmlContent = await convertPdfToHtmlWithOptionsInMemory(buffer, {
+      ...options,
+      fileName: file.name,
+    });
 
     // Generate filename for download
     const originalName = file.name.replace(/\.pdf$/i, "");
