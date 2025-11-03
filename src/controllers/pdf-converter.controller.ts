@@ -1,12 +1,11 @@
 import type { Context } from "hono";
-import { convertPdfToHtml, convertPdfToHtmlWithOptions } from "../services/pdf-converter.service";
-import path from "node:path";
-import { unlinkSync } from "node:fs";
+import { convertPdfToHtmlInMemory, convertPdfToHtmlWithOptionsInMemory } from "../services/pdf-converter.service";
 
 /**
  * Handles PDF to HTML conversion requests
  * Expects a multipart form with a 'file' field containing the PDF
  * Returns the HTML file as a downloadable attachment
+ * No files are saved to disk - everything is processed in memory
  */
 export async function convertPdfController(c: Context) {
   try {
@@ -17,33 +16,15 @@ export async function convertPdfController(c: Context) {
       return c.json({ error: "No PDF file provided" }, 400);
     }
 
-    // Save uploaded file temporarily
-    const uploadDir = "/app/uploads";
-    const timestamp = Date.now();
-    const inputPath = path.join(uploadDir, `${timestamp}-${file.name}`);
-    const outputPath = path.join("/app/output", `${timestamp}-output`);
-
-    // Write file to disk
+    // Read file into memory
     const buffer = await file.arrayBuffer();
-    await Bun.write(inputPath, buffer);
 
-    // Convert PDF to HTML
-    const htmlPath: string = await convertPdfToHtml(inputPath, outputPath);
-
-    // Read the generated HTML
-    const htmlContent = await Bun.file(htmlPath).text();
+    // Convert PDF to HTML in memory
+    const htmlContent = await convertPdfToHtmlInMemory(buffer);
 
     // Generate filename for download
     const originalName = file.name.replace(/\.pdf$/i, "");
     const downloadFilename = `${originalName}.html`;
-
-    // Clean up temporary files
-    try {
-      unlinkSync(inputPath);
-      unlinkSync(htmlPath);
-    } catch {
-      // Ignore cleanup errors
-    }
 
     // Return HTML as downloadable file
     return c.html(htmlContent, {
@@ -66,6 +47,7 @@ export async function convertPdfController(c: Context) {
  * Handles PDF to HTML conversion with custom options
  * Expects a multipart form with 'file' and optional 'options' JSON field
  * Returns the HTML file as a downloadable attachment
+ * No files are saved to disk - everything is processed in memory
  */
 export async function convertPdfWithOptionsController(c: Context) {
   try {
@@ -87,33 +69,15 @@ export async function convertPdfWithOptionsController(c: Context) {
       }
     }
 
-    // Save uploaded file temporarily
-    const uploadDir = "/app/uploads";
-    const timestamp = Date.now();
-    const inputPath = path.join(uploadDir, `${timestamp}-${file.name}`);
-    const outputPath = path.join("/app/output", `${timestamp}-output`);
-
-    // Write file to disk
+    // Read file into memory
     const buffer = await file.arrayBuffer();
-    await Bun.write(inputPath, buffer);
 
-    // Convert PDF to HTML with options
-    const htmlPath: string = await convertPdfToHtmlWithOptions(inputPath, outputPath, options);
-
-    // Read the generated HTML
-    const htmlContent = await Bun.file(htmlPath).text();
+    // Convert PDF to HTML with options in memory
+    const htmlContent = await convertPdfToHtmlWithOptionsInMemory(buffer, options);
 
     // Generate filename for download
     const originalName = file.name.replace(/\.pdf$/i, "");
     const downloadFilename = `${originalName}.html`;
-
-    // Clean up temporary files
-    try {
-      unlinkSync(inputPath);
-      unlinkSync(htmlPath);
-    } catch {
-      // Ignore cleanup errors
-    }
 
     // Return HTML as downloadable file
     return c.html(htmlContent, {

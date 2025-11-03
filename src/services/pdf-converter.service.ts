@@ -1,29 +1,16 @@
-import { existsSync, unlinkSync, writeFileSync, readFileSync } from "node:fs";
 import pdfParse from "pdf-parse";
 
 /**
- * Converts a PDF file to HTML using pdf-parse library
- * @param inputPath - Path to the input PDF file
- * @param outputPath - Path where the HTML output will be saved
- * @returns The path to the generated HTML file
+ * Converts a PDF buffer to HTML in memory
+ * @param pdfBuffer - ArrayBuffer containing the PDF data
+ * @returns The HTML content as a string
  */
-export async function convertPdfToHtml(
-  inputPath: string,
-  outputPath: string
+export async function convertPdfToHtmlInMemory(
+  pdfBuffer: ArrayBuffer
 ): Promise<string> {
-  // Validate input file exists
-  if (!existsSync(inputPath)) {
-    throw new Error(`Input PDF file not found: ${inputPath}`);
-  }
-
-  const htmlFile = `${outputPath}.html`;
-
   try {
-    // Read PDF file
-    const pdfBuffer = readFileSync(inputPath);
-
-    // Parse PDF
-    const data = await pdfParse(pdfBuffer);
+    // Parse PDF from buffer
+    const data = await pdfParse(Buffer.from(pdfBuffer));
 
     // Generate HTML
     let htmlContent = `
@@ -46,7 +33,7 @@ export async function convertPdfToHtml(
     // Add text content from each page
     if (data.text) {
       const pages = data.text.split("\f"); // Form feed character separates pages
-      pages.forEach((pageText, index) => {
+      pages.forEach((pageText: string, index: number) => {
         if (pageText.trim()) {
           htmlContent += `
     <div class="page">
@@ -63,16 +50,8 @@ export async function convertPdfToHtml(
 </html>
 `;
 
-    // Write HTML file
-    writeFileSync(htmlFile, htmlContent, "utf-8");
-
-    return htmlFile;
+    return htmlContent;
   } catch (error) {
-    // Clean up any partial output
-    if (existsSync(htmlFile)) {
-      unlinkSync(htmlFile);
-    }
-
     throw new Error(
       `PDF conversion failed: ${error instanceof Error ? error.message : String(error)}`
     );
@@ -80,30 +59,20 @@ export async function convertPdfToHtml(
 }
 
 /**
- * Converts a PDF file to HTML with custom options
- * @param inputPath - Path to the input PDF file
- * @param outputPath - Path where the HTML output will be saved
+ * Converts a PDF buffer to HTML with custom options in memory
+ * @param pdfBuffer - ArrayBuffer containing the PDF data
  * @param options - Additional conversion options (include_metadata, etc.)
- * @returns The path to the generated HTML file
+ * @returns The HTML content as a string
  */
-export async function convertPdfToHtmlWithOptions(
-  inputPath: string,
-  outputPath: string,
+export async function convertPdfToHtmlWithOptionsInMemory(
+  pdfBuffer: ArrayBuffer,
   options: Record<string, string | number | boolean> = {}
 ): Promise<string> {
-  if (!existsSync(inputPath)) {
-    throw new Error(`Input PDF file not found: ${inputPath}`);
-  }
-
-  const htmlFile = `${outputPath}.html`;
   const includeMetadata = options.include_metadata === true;
 
   try {
-    // Read PDF file
-    const pdfBuffer = readFileSync(inputPath);
-
-    // Parse PDF
-    const data = await pdfParse(pdfBuffer);
+    // Parse PDF from buffer
+    const data = await pdfParse(Buffer.from(pdfBuffer));
 
     // Generate HTML with options
     let htmlContent = `
@@ -158,15 +127,8 @@ export async function convertPdfToHtmlWithOptions(
 </html>
 `;
 
-    // Write HTML file
-    writeFileSync(htmlFile, htmlContent, "utf-8");
-
-    return htmlFile;
+    return htmlContent;
   } catch (error) {
-    if (existsSync(htmlFile)) {
-      unlinkSync(htmlFile);
-    }
-
     throw new Error(
       `PDF conversion failed: ${error instanceof Error ? error.message : String(error)}`
     );
