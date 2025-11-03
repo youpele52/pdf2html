@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  pdf2html:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: pdf2html
+    ports:
+      - "50001:50001"
+    environment:
+      - PORT=50001
+      - NODE_ENV=development
+    volumes:
+      - ./src:/app/src
+      - ./tsconfig.json:/app/tsconfig.json
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bun", "--eval", "const res = await fetch('http://localhost:50001/is-alive'); process.exit(res.ok ? 0 : 1)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - pdf2html-network
+
+networks:
+  pdf2html-network:
+    driver: bridge
