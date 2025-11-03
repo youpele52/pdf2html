@@ -30,6 +30,9 @@ RUN bun install --frozen-lockfile --production
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
+# Create directory for uploads and output
+RUN mkdir -p /app/uploads /app/output
+
 # Expose port
 EXPOSE 50001
 
