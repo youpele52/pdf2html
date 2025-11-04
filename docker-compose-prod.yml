@@ -1,14 +1,15 @@
 services:
-  nginx:
+  caddy:
     build:
-      context: ./nginx
+      context: ./caddy
       dockerfile: Dockerfile
-    container_name: nginx
+    container_name: caddy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - caddy_data:/data
+      - caddy_config:/config
     restart: unless-stopped
     depends_on:
       pdf2html:
@@ -45,3 +46,7 @@ services:
 networks:
   pdf2html-network:
     driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,3 @@
+helper.wordsmith.ws {
+    reverse_proxy pdf2html:50001
+}
