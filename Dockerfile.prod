@@ -1,22 +1,6 @@
-# Build stage
-FROM oven/bun:latest AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json bun.lock ./
-
-# Install dependencies
-RUN bun install --frozen-lockfile
-
-# Copy source code
-COPY src ./src
-COPY tsconfig.json ./
-
-# Build the application
-RUN bun run build
-
-# Runtime stage
+# =========================
+# Production Runtime
+# =========================
 FROM oven/bun:latest
 
 WORKDIR /app
@@ -24,11 +8,12 @@ WORKDIR /app
 # Copy package files
 COPY package.json bun.lock ./
 
-# Install production dependencies only
+# Install production dependencies
 RUN bun install --frozen-lockfile --production
 
-# Copy built application from builder
-COPY --from=builder /app/dist ./dist
+# Copy source code
+COPY src ./src
+COPY tsconfig.json ./
 
 # Create directory for uploads and output
 RUN mkdir -p /app/uploads /app/output
@@ -40,5 +25,5 @@ EXPOSE 50001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD bun --eval "const res = await fetch('http://localhost:50001/is-alive'); process.exit(res.ok ? 0 : 1)"
 
-# Start the application
-CMD ["bun", "dist/index.js"]
+# Start the application directly from TypeScript source
+CMD ["bun", "src/index.ts"]
