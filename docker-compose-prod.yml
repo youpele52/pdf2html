@@ -31,7 +31,7 @@ services:
       dockerfile: Dockerfile
     container_name: nginx-proxy
     ports:
-      - "80:80"
+      - "80:50001"
     depends_on:
       - pdf2html
     restart: unless-stopped
