@@ -9,7 +9,13 @@ services:
       - NODE_ENV=production
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "bun", "--eval", "const res = await fetch('http://localhost:50001/is-alive'); process.exit(res.ok ? 0 : 1)"]
+      test:
+        [
+          "CMD",
+          "bun",
+          "--eval",
+          "const res = await fetch('http://localhost:50001/is-alive'); process.exit(res.ok ? 0 : 1)",
+        ]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -26,10 +32,6 @@ services:
     container_name: nginx-proxy
     ports:
       - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./certs:/etc/nginx/certs:ro
     depends_on:
       - pdf2html
     restart: unless-stopped
