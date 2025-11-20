@@ -17,8 +17,9 @@ services:
       retries: 3
       start_period: 5s
     networks:
-      - pdf2html-network
+      - wordsmith_network
 
 networks:
-  pdf2html-network:
+  wordsmith_network:
     external: true
+    name: wordsmith_network
