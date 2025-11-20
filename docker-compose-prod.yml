@@ -21,4 +21,4 @@ services:
 
 networks:
   pdf2html-network:
-    driver: bridge
+    external: true
