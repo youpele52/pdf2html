@@ -6,3 +6,12 @@ helper.wordsmith.ws {
         respond "OK" 200
     }
 }
+
+email-assistant.wordsmith.ws {
+    reverse_proxy email_assistant:50001
+    
+    # Health check endpoint
+    handle /health {
+        respond "OK" 200
+    }
+}
